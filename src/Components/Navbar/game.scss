@@ -20,12 +20,12 @@
     transform-style: preserve-3d;
 
     .jackpoint-box {
-      width: 80%;
+      width: 90%;
       margin: 0 auto;
       padding: 10px;
       text-align: center;
-      border-radius: 10px;
-      background-color: #ffb400;
+      border-radius: 0px;
+      background-color: #000000;
       height: fit-content;
       border: 1px solid white;
       transform: translateZ(30px);
@@ -41,13 +41,13 @@
       h3 {
         span {
           font-weight: 800;
-          color: black;
+          color: rgb(255, 255, 255);
           text-transform: uppercase;
           text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.4);
         }
         font-weight: 700;
         font-family: monospace;
-        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+        color: white;
       }
     }
 
@@ -243,10 +243,16 @@
           inset 0 2px 5px rgba(255, 255, 255, 0.4),
           0 0 15px rgba(255, 215, 0, 0.3);
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         font-weight: 800;
         letter-spacing: 2px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-
+        // text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        img {
+          height: 25px;
+        }
         &:hover:not(:disabled) {
           transform: translateZ(35px) scale(1.05);
           background: linear-gradient(145deg, #ffd54f, #ffb400);

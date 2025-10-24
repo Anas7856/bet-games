@@ -3,7 +3,7 @@ import "./game.scss";
 import s1 from "../../assets/imgi_3_zeus-11.png";
 import s2 from "../../assets/imgi_3_zeus-10.png";
 import s3 from "../../assets/imgi_3_zeus-9.png";
-
+import spinlogo from "../../assets/circle-arrow-looping-arrows-for-refresh-icon-rm2MjPp4-removebg-preview.png";
 const symbols = [s1, s2, s3];
 
 const SlotGame = () => {
@@ -197,7 +197,7 @@ const SlotGame = () => {
 
         <div className="slot-button-box">
           <button onClick={handleSpin} disabled={spinning}>
-            spin
+            spin <img src={spinlogo} alt="" />
           </button>
         </div>
         <div className="bet-main-box">
