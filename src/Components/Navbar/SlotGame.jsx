@@ -8,9 +8,9 @@ import spinlogo from "../../assets/pngwing.com (5).png";
 const symbols = [s1, s2, s3];
 
 const SlotGame = () => {
-  const [jackpot, setJackpot] = useState(12000344); // Buy value (player chips)
+  const [jackpot, setJackpot] = useState(12000344); // Player chips
   const [bet, setBet] = useState(12000344 / 10); // Bet = 1/10 of jackpot
-  const [totalJackpot, setTotalJackpot] = useState(1222470520); // Top jackpot (auto increases)
+  const [totalJackpot, setTotalJackpot] = useState(1222470520); // Auto increasing jackpot
   const [spinning, setSpinning] = useState(false);
   const [rows, setRows] = useState([
     [s1, s2, s3],
@@ -20,14 +20,14 @@ const SlotGame = () => {
   const [winner, setWinner] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [stoppingColumns, setStoppingColumns] = useState([false, false, false]);
-  const [spinCount, setSpinCount] = useState(0); // To detect second spin win
+  const [winCount, setWinCount] = useState(0); // Track number of wins
   const [timer, setTimer] = useState({
     hours: 0,
     minutes: 1,
     seconds: 24,
   });
 
-  // ✅ Only auto-increase the total jackpot (top value)
+  // ✅ Auto-increase only total jackpot
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
@@ -37,7 +37,7 @@ const SlotGame = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Countdown Timer (only when modal opens)
+  // Countdown timer (only runs when modal opens)
   useEffect(() => {
     if (!showModal) return;
     const interval = setInterval(() => {
@@ -125,6 +125,7 @@ const SlotGame = () => {
       ]);
     }, spinDuration + 800);
 
+    // ✅ Final column stop and win check
     setTimeout(() => {
       setStoppingColumns([true, true, true]);
       setRows(finalRows);
@@ -135,11 +136,15 @@ const SlotGame = () => {
 
         setWinner(isWinner);
         setSpinning(false);
-        setSpinCount((prev) => prev + 1);
 
-        // ✅ Only open modal on SECOND spin win
-        if (isWinner && spinCount === 2) {
-          setTimeout(() => setShowModal(true), 1000);
+        if (isWinner) {
+          setWinCount((prev) => {
+            const newCount = prev + 1;
+            if (newCount === 1) {
+              setTimeout(() => setShowModal(true), 1000);
+            }
+            return newCount;
+          });
         }
       }, 500);
     }, spinDuration + 1600);
