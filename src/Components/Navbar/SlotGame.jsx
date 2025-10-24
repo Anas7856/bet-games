@@ -3,12 +3,14 @@ import "./game.scss";
 import s1 from "../../assets/imgi_3_zeus-11.png";
 import s2 from "../../assets/imgi_3_zeus-10.png";
 import s3 from "../../assets/imgi_3_zeus-9.png";
-import spinlogo from "../../assets/circle-arrow-looping-arrows-for-refresh-icon-rm2MjPp4-removebg-preview.png";
+import spinlogo from "../../assets/pngwing.com (5).png";
+
 const symbols = [s1, s2, s3];
 
 const SlotGame = () => {
-  const [jackpot, setJackpot] = useState(12000344);
-  const [totalJackpot, setTotalJackpot] = useState(1222470520);
+  const [jackpot, setJackpot] = useState(12000344); // Buy value (player chips)
+  const [bet, setBet] = useState(12000344 / 10); // Bet = 1/10 of jackpot
+  const [totalJackpot, setTotalJackpot] = useState(1222470520); // Top jackpot (auto increases)
   const [spinning, setSpinning] = useState(false);
   const [rows, setRows] = useState([
     [s1, s2, s3],
@@ -18,21 +20,14 @@ const SlotGame = () => {
   const [winner, setWinner] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [stoppingColumns, setStoppingColumns] = useState([false, false, false]);
+  const [spinCount, setSpinCount] = useState(0); // To detect second spin win
   const [timer, setTimer] = useState({
     hours: 0,
     minutes: 1,
     seconds: 24,
   });
 
-  // Auto-increase jackpot
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setJackpot((prev) => prev + Math.floor(Math.random() * 500 + 100));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Auto-increase total jackpot
+  // ✅ Only auto-increase the total jackpot (top value)
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
@@ -42,7 +37,7 @@ const SlotGame = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Countdown Timer
+  // Countdown Timer (only when modal opens)
   useEffect(() => {
     if (!showModal) return;
     const interval = setInterval(() => {
@@ -65,6 +60,9 @@ const SlotGame = () => {
     return () => clearInterval(interval);
   }, [showModal]);
 
+  const randomSymbol = () =>
+    symbols[Math.floor(Math.random() * symbols.length)];
+
   const handleSpin = () => {
     if (spinning) return;
     setSpinning(true);
@@ -72,37 +70,30 @@ const SlotGame = () => {
     setShowModal(false);
     setStoppingColumns([false, false, false]);
 
-    let spinDuration = 2500;
-
-    // Generate final result - determine if it's a win or not
-    const isWin = Math.random() > 0.3; // 70% chance to win
+    const spinDuration = 2500;
+    const isWin = Math.random() > 0.3;
     let finalRows;
 
+    // Generate win/lose results
     if (isWin) {
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-      // Winner only in middle row (index 1)
       finalRows = [
         [randomSymbol(), randomSymbol(), randomSymbol()],
-        [winSymbol, winSymbol, winSymbol], // Middle row wins
+        [winSymbol, winSymbol, winSymbol],
         [randomSymbol(), randomSymbol(), randomSymbol()],
       ];
-      // Ensure other rows don't accidentally match
       for (let col = 0; col < 3; col++) {
-        while (finalRows[0][col] === winSymbol) {
+        while (finalRows[0][col] === winSymbol)
           finalRows[0][col] = randomSymbol();
-        }
-        while (finalRows[2][col] === winSymbol) {
+        while (finalRows[2][col] === winSymbol)
           finalRows[2][col] = randomSymbol();
-        }
       }
     } else {
-      // Make sure no row has all same symbols
       finalRows = [
         [randomSymbol(), randomSymbol(), randomSymbol()],
         [randomSymbol(), randomSymbol(), randomSymbol()],
         [randomSymbol(), randomSymbol(), randomSymbol()],
       ];
-      // Ensure middle row has different symbols
       for (let col = 0; col < 3; col++) {
         while (
           finalRows[1][0] === finalRows[1][1] ||
@@ -115,60 +106,71 @@ const SlotGame = () => {
       }
     }
 
-    // Stop first column after 2.5 seconds
+    // Column stop sequence
     setTimeout(() => {
       setStoppingColumns([true, false, false]);
-      setRows((prevRows) => [
-        [finalRows[0][0], prevRows[0][1], prevRows[0][2]],
-        [finalRows[1][0], prevRows[1][1], prevRows[1][2]],
-        [finalRows[2][0], prevRows[2][1], prevRows[2][2]],
+      setRows((prev) => [
+        [finalRows[0][0], prev[0][1], prev[0][2]],
+        [finalRows[1][0], prev[1][1], prev[1][2]],
+        [finalRows[2][0], prev[2][1], prev[2][2]],
       ]);
     }, spinDuration);
 
-    // Stop second column after 3.3 seconds
     setTimeout(() => {
       setStoppingColumns([true, true, false]);
-      setRows((prevRows) => [
-        [prevRows[0][0], finalRows[0][1], prevRows[0][2]],
-        [prevRows[1][0], finalRows[1][1], prevRows[1][2]],
-        [prevRows[2][0], finalRows[2][1], prevRows[2][2]],
+      setRows((prev) => [
+        [prev[0][0], finalRows[0][1], prev[0][2]],
+        [prev[1][0], finalRows[1][1], prev[1][2]],
+        [prev[2][0], finalRows[2][1], prev[2][2]],
       ]);
     }, spinDuration + 800);
 
-    // Stop third column after 4.1 seconds and set final result
     setTimeout(() => {
       setStoppingColumns([true, true, true]);
       setRows(finalRows);
 
       setTimeout(() => {
-        // Check if MIDDLE row (index 1) is a winner
-        const middleRowSymbols = finalRows[1];
-        const isWinner =
-          middleRowSymbols[0] === middleRowSymbols[1] &&
-          middleRowSymbols[1] === middleRowSymbols[2];
+        const middle = finalRows[1];
+        const isWinner = middle[0] === middle[1] && middle[1] === middle[2];
 
         setWinner(isWinner);
         setSpinning(false);
+        setSpinCount((prev) => prev + 1);
 
-        if (isWinner) {
+        // ✅ Only open modal on SECOND spin win
+        if (isWinner && spinCount === 2) {
           setTimeout(() => setShowModal(true), 1000);
         }
       }, 500);
     }, spinDuration + 1600);
   };
 
-  const randomSymbol = () =>
-    symbols[Math.floor(Math.random() * symbols.length)];
+  // Increase / Decrease bet manually
+  const handleIncreaseBet = () => {
+    if (jackpot <= 0) return;
+    const amount = 1000;
+    if (jackpot - amount < 0) return;
+    setBet((prev) => prev + amount);
+    setJackpot((prev) => prev - amount);
+  };
+
+  const handleDecreaseBet = () => {
+    const amount = 1000;
+    if (bet - amount < 1000) return;
+    setBet((prev) => prev - amount);
+    setJackpot((prev) => prev + amount);
+  };
 
   return (
     <div className="SlotGame">
       <div className="SlotGame-container">
         <div className="jackpoint-box">
           <h3>
-            <span>Total JACKPOT</span> <br /> Rp.{" "}
+            <span>💥Total JACKPOT</span> <br /> Rp.{" "}
             {totalJackpot.toLocaleString()}.00
           </h3>
         </div>
+
         <div className="slot-game-main-box">
           {rows.map((row, i) => (
             <div
@@ -196,10 +198,17 @@ const SlotGame = () => {
         </div>
 
         <div className="slot-button-box">
+          <button className="plus-button" onClick={handleDecreaseBet}>
+            -
+          </button>
           <button onClick={handleSpin} disabled={spinning}>
-            spin <img src={spinlogo} alt="" />
+            <img src={spinlogo} alt="spin" />
+          </button>
+          <button className="plus-button" onClick={handleIncreaseBet}>
+            +
           </button>
         </div>
+
         <div className="bet-main-box">
           <div className="bet-main-box-inner">
             <h4>Buy</h4>
@@ -208,13 +217,12 @@ const SlotGame = () => {
           </div>
           <div className="bet-main-box-inner">
             <h4>Bet</h4>
-            <h3>Rp {(jackpot / 10).toLocaleString()}</h3>
+            <h3>Rp {bet.toLocaleString()}</h3>
             <p>Double Amount</p>
           </div>
         </div>
       </div>
 
-      {/* JACKPOT MODAL */}
       {showModal && (
         <div className="jackpot-modal">
           <div className="jackpot-modal-content">
