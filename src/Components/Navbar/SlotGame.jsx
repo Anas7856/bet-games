@@ -4,13 +4,16 @@ import s1 from "../../assets/imgi_3_zeus-11.png";
 import s2 from "../../assets/imgi_3_zeus-10.png";
 import s3 from "../../assets/imgi_3_zeus-9.png";
 import spinlogo from "../../assets/pngwing.com (5).png";
+import frame1 from "../../assets/frame1.png";
+import framebg from "../../assets/frame5.png";
 
 const symbols = [s1, s2, s3];
 
 const SlotGame = () => {
-  const [jackpot, setJackpot] = useState(12000344); // Player chips
-  const [bet, setBet] = useState(12000344 / 10); // Bet = 1/10 of jackpot
-  const [totalJackpot, setTotalJackpot] = useState(1222470520); // Auto increasing jackpot
+  const [jackpot, setJackpot] = useState(12000344);
+  const [bet, setBet] = useState(250);
+  const [freeSpins, setFreeSpins] = useState(20000);
+  const [totalJackpot, setTotalJackpot] = useState(1222470520);
   const [spinning, setSpinning] = useState(false);
   const [rows, setRows] = useState([
     [s1, s2, s3],
@@ -20,24 +23,24 @@ const SlotGame = () => {
   const [winner, setWinner] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [stoppingColumns, setStoppingColumns] = useState([false, false, false]);
-  const [winCount, setWinCount] = useState(0); // Track number of wins
+  const [winCount, setWinCount] = useState(0);
   const [timer, setTimer] = useState({
     hours: 0,
     minutes: 1,
     seconds: 24,
   });
 
-  // ✅ Auto-increase only total jackpot
+  // Auto-increase total jackpot with bigger increments
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
-        (prev) => prev + Math.floor(Math.random() * 10000 + 5000)
+        (prev) => prev + Math.floor(Math.random() * 50000 + 25000)
       );
-    }, 2000);
+    }, 1500);
     return () => clearInterval(interval);
   }, []);
 
-  // Countdown timer (only runs when modal opens)
+  // Countdown timer
   useEffect(() => {
     if (!showModal) return;
     const interval = setInterval(() => {
@@ -74,7 +77,6 @@ const SlotGame = () => {
     const isWin = Math.random() > 0.3;
     let finalRows;
 
-    // Generate win/lose results
     if (isWin) {
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
       finalRows = [
@@ -106,7 +108,6 @@ const SlotGame = () => {
       }
     }
 
-    // Column stop sequence
     setTimeout(() => {
       setStoppingColumns([true, false, false]);
       setRows((prev) => [
@@ -125,7 +126,6 @@ const SlotGame = () => {
       ]);
     }, spinDuration + 800);
 
-    // ✅ Final column stop and win check
     setTimeout(() => {
       setStoppingColumns([true, true, true]);
       setRows(finalRows);
@@ -150,20 +150,17 @@ const SlotGame = () => {
     }, spinDuration + 1600);
   };
 
-  // Increase / Decrease bet manually
+  // Increase bet and free spins
   const handleIncreaseBet = () => {
-    if (jackpot <= 0) return;
-    const amount = 1000;
-    if (jackpot - amount < 0) return;
-    setBet((prev) => prev + amount);
-    setJackpot((prev) => prev - amount);
+    setBet((prev) => prev + 50);
+    setFreeSpins((prev) => prev + 5000);
   };
 
+  // Decrease bet and free spins
   const handleDecreaseBet = () => {
-    const amount = 1000;
-    if (bet - amount < 1000) return;
-    setBet((prev) => prev - amount);
-    setJackpot((prev) => prev + amount);
+    if (bet <= 50) return;
+    setBet((prev) => prev - 50);
+    setFreeSpins((prev) => Math.max(5000, prev - 5000));
   };
 
   return (
@@ -201,7 +198,23 @@ const SlotGame = () => {
             </div>
           ))}
         </div>
-
+        <h2 className="place-bet-text">Place Your Bet</h2>
+        <div className="stats-box-main">
+          <div className="stats-box1">
+            <h3>
+              BET <span>Rp {bet.toLocaleString()}</span>
+            </h3>
+            <h4>
+              DOUBLE THE CHANCE <br />
+              TO WIN THE FEATURE
+            </h4>
+          </div>
+          <div className="stats-box2">
+            <h6>BUY</h6>
+            <h5>FREE SPINS</h5>
+            <h3>Rp {freeSpins.toLocaleString()}</h3>
+          </div>
+        </div>
         <div className="slot-button-box">
           <button className="plus-button" onClick={handleDecreaseBet}>
             -
@@ -213,21 +226,7 @@ const SlotGame = () => {
             +
           </button>
         </div>
-
-        <div className="bet-main-box">
-          <div className="bet-main-box-inner">
-            <h4>Buy</h4>
-            <p>Free Spins</p>
-            <h3>Rp {jackpot.toLocaleString()}</h3>
-          </div>
-          <div className="bet-main-box-inner">
-            <h4>Bet</h4>
-            <h3>Rp {bet.toLocaleString()}</h3>
-            <p>Double Amount</p>
-          </div>
-        </div>
       </div>
-
       {showModal && (
         <div className="jackpot-modal">
           <div className="jackpot-modal-content">
