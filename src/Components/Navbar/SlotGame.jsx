@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "./game.scss";
-import s1 from "../../assets/imgi_3_zeus-11.png";
-import s2 from "../../assets/imgi_3_zeus-10.png";
-import s3 from "../../assets/imgi_3_zeus-9.png";
+import s1 from "../../assets/Capture-removebg-preview (6).png";
+import s2 from "../../assets/Capture-removebg-preview (7).png";
+import s3 from "../../assets/Capture-removebg-preview (8).png";
+import s4 from "../../assets/imgi_3_zeus-9.png"; // Add your 4th symbol image
+import s5 from "../../assets/imgi_3_zeus-10.png"; // Add your 5th symbol image
 import spinlogo from "../../assets/pngwing.com (5).png";
 import frame1 from "../../assets/frame1.png";
 import framebg from "../../assets/frame5.png";
-
-const symbols = [s1, s2, s3];
+import goldenframe from "../../assets/goldenframe.png";
+const symbols = [s1, s2, s3, s4, s5];
 
 const SlotGame = () => {
   const [jackpot, setJackpot] = useState(12000344);
@@ -16,13 +18,20 @@ const SlotGame = () => {
   const [totalJackpot, setTotalJackpot] = useState(1222470520);
   const [spinning, setSpinning] = useState(false);
   const [rows, setRows] = useState([
-    [s1, s2, s3],
-    [s2, s3, s1],
-    [s3, s1, s2],
+    [s1, s2, s3, s5, s2, s4],
+    [s1, s4, s5, s2, s3, s5],
+    [s3, s5, s2, s3, s1, s5],
   ]);
   const [winner, setWinner] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [stoppingColumns, setStoppingColumns] = useState([false, false, false]);
+  const [stoppingColumns, setStoppingColumns] = useState([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
   const [winCount, setWinCount] = useState(0);
   const [timer, setTimer] = useState({
     hours: 0,
@@ -71,7 +80,7 @@ const SlotGame = () => {
     setSpinning(true);
     setWinner(false);
     setShowModal(false);
-    setStoppingColumns([false, false, false]);
+    setStoppingColumns([false, false, false, false, false, false]);
 
     const spinDuration = 2500;
     const isWin = Math.random() > 0.3;
@@ -80,11 +89,25 @@ const SlotGame = () => {
     if (isWin) {
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
       finalRows = [
-        [randomSymbol(), randomSymbol(), randomSymbol()],
-        [winSymbol, winSymbol, winSymbol],
-        [randomSymbol(), randomSymbol(), randomSymbol()],
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
+        [winSymbol, winSymbol, winSymbol, winSymbol, winSymbol, winSymbol],
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
       ];
-      for (let col = 0; col < 3; col++) {
+      for (let col = 0; col < 6; col++) {
         while (finalRows[0][col] === winSymbol)
           finalRows[0][col] = randomSymbol();
         while (finalRows[2][col] === winSymbol)
@@ -92,47 +115,199 @@ const SlotGame = () => {
       }
     } else {
       finalRows = [
-        [randomSymbol(), randomSymbol(), randomSymbol()],
-        [randomSymbol(), randomSymbol(), randomSymbol()],
-        [randomSymbol(), randomSymbol(), randomSymbol()],
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
       ];
-      for (let col = 0; col < 3; col++) {
-        while (
-          finalRows[1][0] === finalRows[1][1] ||
-          finalRows[1][1] === finalRows[1][2] ||
-          finalRows[1][0] === finalRows[1][2]
-        ) {
-          finalRows[1][1] = randomSymbol();
-          finalRows[1][2] = randomSymbol();
-        }
+      // Ensure middle row doesn't have all same symbols
+      let attempts = 0;
+      while (attempts < 100) {
+        const allSame = finalRows[1].every((sym) => sym === finalRows[1][0]);
+        if (!allSame) break;
+        finalRows[1] = finalRows[1].map(() => randomSymbol());
+        attempts++;
       }
     }
 
+    // Stop columns sequentially
     setTimeout(() => {
-      setStoppingColumns([true, false, false]);
+      setStoppingColumns([true, false, false, false, false, false]);
       setRows((prev) => [
-        [finalRows[0][0], prev[0][1], prev[0][2]],
-        [finalRows[1][0], prev[1][1], prev[1][2]],
-        [finalRows[2][0], prev[2][1], prev[2][2]],
+        [
+          finalRows[0][0],
+          prev[0][1],
+          prev[0][2],
+          prev[0][3],
+          prev[0][4],
+          prev[0][5],
+        ],
+        [
+          finalRows[1][0],
+          prev[1][1],
+          prev[1][2],
+          prev[1][3],
+          prev[1][4],
+          prev[1][5],
+        ],
+        [
+          finalRows[2][0],
+          prev[2][1],
+          prev[2][2],
+          prev[2][3],
+          prev[2][4],
+          prev[2][5],
+        ],
       ]);
     }, spinDuration);
 
     setTimeout(() => {
-      setStoppingColumns([true, true, false]);
+      setStoppingColumns([true, true, false, false, false, false]);
       setRows((prev) => [
-        [prev[0][0], finalRows[0][1], prev[0][2]],
-        [prev[1][0], finalRows[1][1], prev[1][2]],
-        [prev[2][0], finalRows[2][1], prev[2][2]],
+        [
+          prev[0][0],
+          finalRows[0][1],
+          prev[0][2],
+          prev[0][3],
+          prev[0][4],
+          prev[0][5],
+        ],
+        [
+          prev[1][0],
+          finalRows[1][1],
+          prev[1][2],
+          prev[1][3],
+          prev[1][4],
+          prev[1][5],
+        ],
+        [
+          prev[2][0],
+          finalRows[2][1],
+          prev[2][2],
+          prev[2][3],
+          prev[2][4],
+          prev[2][5],
+        ],
       ]);
-    }, spinDuration + 800);
+    }, spinDuration + 300);
 
     setTimeout(() => {
-      setStoppingColumns([true, true, true]);
+      setStoppingColumns([true, true, true, false, false, false]);
+      setRows((prev) => [
+        [
+          prev[0][0],
+          prev[0][1],
+          finalRows[0][2],
+          prev[0][3],
+          prev[0][4],
+          prev[0][5],
+        ],
+        [
+          prev[1][0],
+          prev[1][1],
+          finalRows[1][2],
+          prev[1][3],
+          prev[1][4],
+          prev[1][5],
+        ],
+        [
+          prev[2][0],
+          prev[2][1],
+          finalRows[2][2],
+          prev[2][3],
+          prev[2][4],
+          prev[2][5],
+        ],
+      ]);
+    }, spinDuration + 600);
+
+    setTimeout(() => {
+      setStoppingColumns([true, true, true, true, false, false]);
+      setRows((prev) => [
+        [
+          prev[0][0],
+          prev[0][1],
+          prev[0][2],
+          finalRows[0][3],
+          prev[0][4],
+          prev[0][5],
+        ],
+        [
+          prev[1][0],
+          prev[1][1],
+          prev[1][2],
+          finalRows[1][3],
+          prev[1][4],
+          prev[1][5],
+        ],
+        [
+          prev[2][0],
+          prev[2][1],
+          prev[2][2],
+          finalRows[2][3],
+          prev[2][4],
+          prev[2][5],
+        ],
+      ]);
+    }, spinDuration + 900);
+
+    setTimeout(() => {
+      setStoppingColumns([true, true, true, true, true, false]);
+      setRows((prev) => [
+        [
+          prev[0][0],
+          prev[0][1],
+          prev[0][2],
+          prev[0][3],
+          finalRows[0][4],
+          prev[0][5],
+        ],
+        [
+          prev[1][0],
+          prev[1][1],
+          prev[1][2],
+          prev[1][3],
+          finalRows[1][4],
+          prev[1][5],
+        ],
+        [
+          prev[2][0],
+          prev[2][1],
+          prev[2][2],
+          prev[2][3],
+          finalRows[2][4],
+          prev[2][5],
+        ],
+      ]);
+    }, spinDuration + 1200);
+
+    setTimeout(() => {
+      setStoppingColumns([true, true, true, true, true, true]);
       setRows(finalRows);
 
       setTimeout(() => {
         const middle = finalRows[1];
-        const isWinner = middle[0] === middle[1] && middle[1] === middle[2];
+        const isWinner = middle.every((sym) => sym === middle[0]);
 
         setWinner(isWinner);
         setSpinning(false);
@@ -147,7 +322,7 @@ const SlotGame = () => {
           });
         }
       }, 500);
-    }, spinDuration + 1600);
+    }, spinDuration + 1500);
   };
 
   // Increase bet and free spins
@@ -166,6 +341,7 @@ const SlotGame = () => {
   return (
     <div className="SlotGame">
       <div className="SlotGame-container">
+        <img className="goldenframe-img" src={goldenframe} alt="" />
         <div className="jackpoint-box">
           <h3>
             <span>💥Total JACKPOT</span> <br /> Rp.{" "}
