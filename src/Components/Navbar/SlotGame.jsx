@@ -3,8 +3,8 @@ import "./game.scss";
 import s1 from "../../assets/Capture-removebg-preview (6).png";
 import s2 from "../../assets/Capture-removebg-preview (7).png";
 import s3 from "../../assets/Capture-removebg-preview (8).png";
-import s4 from "../../assets/imgi_3_zeus-9.png"; // Add your 4th symbol image
-import s5 from "../../assets/imgi_3_zeus-10.png"; // Add your 5th symbol image
+import s4 from "../../assets/imgi_3_zeus-9.png";
+import s5 from "../../assets/imgi_3_zeus-10.png";
 import spinlogo from "../../assets/pngwing.com (5).png";
 import frame1 from "../../assets/frame1.png";
 import framebg from "../../assets/frame5.png";
@@ -21,6 +21,7 @@ const SlotGame = () => {
     [s1, s2, s3, s5, s2, s4],
     [s1, s4, s5, s2, s3, s5],
     [s3, s5, s2, s3, s1, s5],
+    [s2, s1, s4, s5, s3, s2],
   ]);
   const [winner, setWinner] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -106,15 +107,33 @@ const SlotGame = () => {
           randomSymbol(),
           randomSymbol(),
         ],
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
       ];
       for (let col = 0; col < 6; col++) {
         while (finalRows[0][col] === winSymbol)
           finalRows[0][col] = randomSymbol();
         while (finalRows[2][col] === winSymbol)
           finalRows[2][col] = randomSymbol();
+        while (finalRows[3][col] === winSymbol)
+          finalRows[3][col] = randomSymbol();
       }
     } else {
       finalRows = [
+        [
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+          randomSymbol(),
+        ],
         [
           randomSymbol(),
           randomSymbol(),
@@ -178,6 +197,14 @@ const SlotGame = () => {
           prev[2][4],
           prev[2][5],
         ],
+        [
+          finalRows[3][0],
+          prev[3][1],
+          prev[3][2],
+          prev[3][3],
+          prev[3][4],
+          prev[3][5],
+        ],
       ]);
     }, spinDuration);
 
@@ -207,6 +234,14 @@ const SlotGame = () => {
           prev[2][3],
           prev[2][4],
           prev[2][5],
+        ],
+        [
+          prev[3][0],
+          finalRows[3][1],
+          prev[3][2],
+          prev[3][3],
+          prev[3][4],
+          prev[3][5],
         ],
       ]);
     }, spinDuration + 300);
@@ -238,6 +273,14 @@ const SlotGame = () => {
           prev[2][4],
           prev[2][5],
         ],
+        [
+          prev[3][0],
+          prev[3][1],
+          finalRows[3][2],
+          prev[3][3],
+          prev[3][4],
+          prev[3][5],
+        ],
       ]);
     }, spinDuration + 600);
 
@@ -268,6 +311,14 @@ const SlotGame = () => {
           prev[2][4],
           prev[2][5],
         ],
+        [
+          prev[3][0],
+          prev[3][1],
+          prev[3][2],
+          finalRows[3][3],
+          prev[3][4],
+          prev[3][5],
+        ],
       ]);
     }, spinDuration + 900);
 
@@ -297,6 +348,14 @@ const SlotGame = () => {
           prev[2][3],
           finalRows[2][4],
           prev[2][5],
+        ],
+        [
+          prev[3][0],
+          prev[3][1],
+          prev[3][2],
+          prev[3][3],
+          finalRows[3][4],
+          prev[3][5],
         ],
       ]);
     }, spinDuration + 1200);
