@@ -48,6 +48,21 @@ const SlotGame = () => {
   // 🎧 Background music ref
   const bgAudioRef = useRef(null);
 
+  // 🍞 Toast notification state
+  const [toasts, setToasts] = useState([]);
+  const toastIdRef = useRef(0);
+
+  // 🍞 Function to show toast
+  const showToast = (message, type = "success") => {
+    const id = toastIdRef.current++;
+    const newToast = { id, message, type };
+    setToasts((prev) => [...prev, newToast]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3000);
+  };
+
   // 🎵 Initialize background sound and auto-play after delay
   useEffect(() => {
     bgAudioRef.current = new Audio(backgroundSound);
@@ -87,7 +102,7 @@ const SlotGame = () => {
     };
   }, [isMuted]);
 
-  // 🎰 Auto-increase total jackpot
+  // 🎰 Auto-increase total jackpot (no toast)
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
@@ -123,7 +138,7 @@ const SlotGame = () => {
   const randomSymbol = () =>
     symbols[Math.floor(Math.random() * symbols.length)];
 
-  // 🎰 Spin logic (no sound now)
+  // 🎰 Spin logic with toast - FIXED
   const handleSpin = () => {
     if (spinning) return;
     setSpinning(true);
@@ -131,35 +146,60 @@ const SlotGame = () => {
     setShowModal(false);
     setStoppingColumns([false, false, false, false, false, false]);
 
-    const spinDuration = 2500;
     const isWin = Math.random() > 0.3;
-    let finalRows;
+
+    // Create the final result
+    let finalRows = [[], [], [], []];
 
     if (isWin) {
+      // Pick a winning symbol for the middle row
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-      finalRows = Array(4)
-        .fill()
-        .map(() => Array(6).fill(randomSymbol()));
-      finalRows[1] = Array(6).fill(winSymbol);
+
+      // Fill each row
+      for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+        for (let colIndex = 0; colIndex < 6; colIndex++) {
+          if (rowIndex === 1) {
+            // Middle row (row index 1) - all same symbol
+            finalRows[rowIndex][colIndex] = winSymbol;
+          } else {
+            // Other rows - random different symbols
+            finalRows[rowIndex][colIndex] = randomSymbol();
+          }
+        }
+      }
     } else {
-      finalRows = Array(4)
-        .fill()
-        .map(() => Array(6).fill(randomSymbol()));
+      // No win - all random
+      for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+        for (let colIndex = 0; colIndex < 6; colIndex++) {
+          finalRows[rowIndex][colIndex] = randomSymbol();
+        }
+      }
     }
 
-    const delays = [0, 300, 600, 900, 1200, 1500];
-    delays.forEach((delay, i) => {
+    // Stop each column one by one
+    const stopDelays = [400, 500, 600, 700, 800, 900];
+
+    stopDelays.forEach((delay, colIndex) => {
       setTimeout(() => {
         setStoppingColumns((prev) => {
           const updated = [...prev];
-          updated[i] = true;
+          updated[colIndex] = true;
           return updated;
         });
-      }, spinDuration + delay);
+
+        // Update only this column in all rows
+        setRows((prevRows) => {
+          const newRows = prevRows.map((row) => [...row]);
+          for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+            newRows[rowIndex][colIndex] = finalRows[rowIndex][colIndex];
+          }
+          return newRows;
+        });
+      }, delay);
     });
 
+    // Check for win after all columns stopped
     setTimeout(() => {
-      setRows(finalRows);
       setSpinning(false);
       const middle = finalRows[1];
       const isWinner = middle.every((sym) => sym === middle[0]);
@@ -174,19 +214,21 @@ const SlotGame = () => {
           return newCount;
         });
       }
-    }, spinDuration + 2000);
+    }, stopDelays[stopDelays.length - 1] + 200);
   };
 
-  // Bet controls
+  // Bet controls with toast
   const handleIncreaseBet = () => {
     setBet((prev) => prev + 50);
     setFreeSpins((prev) => prev + 5000);
+    showToast("📈 Bet +50 | Free Spins +5000", "increase");
   };
 
   const handleDecreaseBet = () => {
     if (bet <= 50) return;
     setBet((prev) => prev - 50);
     setFreeSpins((prev) => Math.max(5000, prev - 5000));
+    showToast("📉 Bet -50 | Free Spins -5000", "decrease");
   };
 
   // 🔇 Mute toggle
@@ -203,6 +245,60 @@ const SlotGame = () => {
 
   return (
     <div className="SlotGame">
+      {/* 🍞 Toast Container */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10000,
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          width: "90%",
+          maxWidth: "350px",
+        }}
+      >
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            style={{
+              background:
+                toast.type === "increase"
+                  ? "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+                  : "linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              color: "white",
+              fontWeight: "bold",
+              animation: "slideDown 0.3s ease-out",
+              fontSize: "14px",
+              textAlign: "center",
+              border: "2px solid rgba(255,255,255,0.3)",
+            }}
+          >
+            {toast.message}
+          </div>
+        ))}
+      </div>
+
+      <style>
+        {`
+          @keyframes slideDown {
+            from {
+              transform: translateY(-100px);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+        `}
+      </style>
+
       <div className="SlotGame-container">
         {/* 🔊 Volume Control */}
         <button
@@ -316,7 +412,11 @@ const SlotGame = () => {
                 {String(timer.seconds).padStart(2, "0")} DETIK
               </h4>
             </div>
-            <button className="cta-btn">👉 BUAT AKUN GACOR</button>
+            <button className="cta-btn">
+              <a href="https://toto12munchen.net/register?referral_code=member=Vipmaxwin">
+                👉 BUAT AKUN GACOR
+              </a>
+            </button>
           </div>
         </div>
       )}
