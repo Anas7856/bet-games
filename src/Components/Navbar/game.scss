@@ -61,7 +61,7 @@
       background-size: cover;
       background-repeat: no-repeat;
       align-items: center;
-      max-height: 500px !important;
+      height: 250px !important;
       overflow: hidden;
       justify-content: center;
       margin-top: 40px;
@@ -94,8 +94,8 @@
           height: 55px;
           width: auto;
           transition: transform 0.3s ease, filter 0.3s ease;
-          filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.7));
-          transform: translateZ(20px);
+          // filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.7));
+          // transform: translateZ(20px);
 
           &.spinning {
             animation: slotRolling 0.15s infinite linear;
@@ -108,8 +108,8 @@
           }
 
           &:hover {
-            transform: translateZ(30px) scale(1.05);
-            filter: drop-shadow(0 8px 25px rgba(255, 215, 0, 0.5));
+            // transform: translateZ(30px) scale(1.05);
+            // filter: drop-shadow(0 8px 25px rgba(255, 215, 0, 0.5));
           }
         }
       }

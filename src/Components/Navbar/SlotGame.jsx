@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./game.scss";
-import s1 from "../../assets/Capture-removebg-preview (6).png";
-import s2 from "../../assets/Capture-removebg-preview (7).png";
-import s3 from "../../assets/Capture-removebg-preview (8).png";
-import s4 from "../../assets/imgi_3_zeus-9.png";
-import s5 from "../../assets/imgi_3_zeus-10.png";
+import s1 from "../../assets/Capture-removebg-preview (9).png";
+import s2 from "../../assets/Capture-removebg-preview (10).png";
+import s3 from "../../assets/Capture-removebg-preview (11).png";
+import s4 from "../../assets/Capture-removebg-preview (12).png";
+import s5 from "../../assets/Capture-removebg-preview (13).png";
 import spinlogo from "../../assets/pngwing.com (5).png";
 import frame1 from "../../assets/frame1.png";
 import framebg from "../../assets/frame5.png";
 import goldenframe from "../../assets/goldenframe.png";
+
 const symbols = [s1, s2, s3, s4, s5];
 
 const SlotGame = () => {
@@ -39,6 +40,112 @@ const SlotGame = () => {
     minutes: 1,
     seconds: 24,
   });
+  const [isMuted, setIsMuted] = useState(false);
+
+  // Audio references
+  const audioContextRef = useRef(null);
+  const spinSoundRef = useRef(null);
+  const winSoundRef = useRef(null);
+  const stopSoundRef = useRef(null);
+
+  // Initialize audio context and sounds
+  useEffect(() => {
+    audioContextRef.current = new (window.AudioContext ||
+      window.webkitAudioContext)();
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // Play spin sound
+  const playSpinSound = () => {
+    if (isMuted || !audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.frequency.value = 200;
+    oscillator.type = "square";
+    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.1);
+
+    spinSoundRef.current = setInterval(() => {
+      if (isMuted) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 200 + Math.random() * 100;
+      osc.type = "square";
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.05);
+    }, 100);
+  };
+
+  // Stop spin sound
+  const stopSpinSound = () => {
+    if (spinSoundRef.current) {
+      clearInterval(spinSoundRef.current);
+      spinSoundRef.current = null;
+    }
+  };
+
+  // Play stop sound
+  const playStopSound = () => {
+    if (isMuted || !audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.frequency.value = 300;
+    oscillator.type = "sine";
+    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.2);
+  };
+
+  // Play win sound
+  const playWinSound = () => {
+    if (isMuted || !audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C, E, G, C
+
+    notes.forEach((freq, index) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.value = freq;
+      oscillator.type = "sine";
+
+      const startTime = ctx.currentTime + index * 0.15;
+      gainNode.gain.setValueAtTime(0.3, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.4);
+    });
+  };
 
   // Auto-increase total jackpot with bigger increments
   useEffect(() => {
@@ -82,6 +189,9 @@ const SlotGame = () => {
     setWinner(false);
     setShowModal(false);
     setStoppingColumns([false, false, false, false, false, false]);
+
+    // Play spin sound
+    playSpinSound();
 
     const spinDuration = 2500;
     const isWin = Math.random() > 0.3;
@@ -171,6 +281,7 @@ const SlotGame = () => {
 
     // Stop columns sequentially
     setTimeout(() => {
+      playStopSound();
       setStoppingColumns([true, false, false, false, false, false]);
       setRows((prev) => [
         [
@@ -209,6 +320,7 @@ const SlotGame = () => {
     }, spinDuration);
 
     setTimeout(() => {
+      playStopSound();
       setStoppingColumns([true, true, false, false, false, false]);
       setRows((prev) => [
         [
@@ -247,6 +359,7 @@ const SlotGame = () => {
     }, spinDuration + 300);
 
     setTimeout(() => {
+      playStopSound();
       setStoppingColumns([true, true, true, false, false, false]);
       setRows((prev) => [
         [
@@ -285,6 +398,7 @@ const SlotGame = () => {
     }, spinDuration + 600);
 
     setTimeout(() => {
+      playStopSound();
       setStoppingColumns([true, true, true, true, false, false]);
       setRows((prev) => [
         [
@@ -323,6 +437,7 @@ const SlotGame = () => {
     }, spinDuration + 900);
 
     setTimeout(() => {
+      playStopSound();
       setStoppingColumns([true, true, true, true, true, false]);
       setRows((prev) => [
         [
@@ -361,6 +476,8 @@ const SlotGame = () => {
     }, spinDuration + 1200);
 
     setTimeout(() => {
+      playStopSound();
+      stopSpinSound();
       setStoppingColumns([true, true, true, true, true, true]);
       setRows(finalRows);
 
@@ -372,6 +489,7 @@ const SlotGame = () => {
         setSpinning(false);
 
         if (isWinner) {
+          playWinSound();
           setWinCount((prev) => {
             const newCount = prev + 1;
             if (newCount === 1) {
@@ -397,10 +515,46 @@ const SlotGame = () => {
     setFreeSpins((prev) => Math.max(5000, prev - 5000));
   };
 
+  // Toggle mute
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (!isMuted) {
+      stopSpinSound();
+    }
+  };
+
   return (
     <div className="SlotGame">
       <div className="SlotGame-container">
         <img className="goldenframe-img" src={goldenframe} alt="" />
+
+        {/* Volume Control Button */}
+        <button
+          onClick={toggleMute}
+          style={{
+            position: "absolute",
+            bottom: "10px",
+            right: "10px",
+            background: "rgba(0, 0, 0, 0.7)",
+            border: "2px solid gold",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 100,
+            transition: "all 0.3s ease",
+          }}
+        >
+          {isMuted ? (
+            <span style={{ fontSize: "20px" }}>🔇</span>
+          ) : (
+            <span style={{ fontSize: "20px" }}>🔊</span>
+          )}
+        </button>
+
         <div className="jackpoint-box">
           <h3>
             <span>💥Total JACKPOT</span> <br /> Rp.{" "}
