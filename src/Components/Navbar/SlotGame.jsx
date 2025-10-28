@@ -79,7 +79,7 @@ const SlotGame = () => {
           );
         });
       }
-    }, 2000);
+    }, 1000);
 
     // Fallback: if auto-play fails, enable on user interaction
     const startAudio = () => {
@@ -177,7 +177,7 @@ const SlotGame = () => {
     }
 
     // Stop each column one by one
-    const stopDelays = [400, 500, 600, 700, 800, 900];
+    const stopDelays = [1500, 1800, 2000, 2500, 3000, 3500];
 
     stopDelays.forEach((delay, colIndex) => {
       setTimeout(() => {
