@@ -91,9 +91,9 @@ const SlotGame = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
-        (prev) => prev + Math.floor(Math.random() * 50000 + 125000)
+        (prev) => prev + Math.floor(Math.random() * 50000 + 1125000)
       );
-    }, 1500);
+    }, 800);
     return () => clearInterval(interval);
   }, []);
 
