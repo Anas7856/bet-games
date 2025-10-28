@@ -8,7 +8,14 @@ import s5 from "../../assets/Capture-removebg-preview (13).png";
 import spinlogo from "../../assets/pngwing.com (5).png";
 import frame1 from "../../assets/frame1.png";
 import framebg from "../../assets/frame5.png";
-import goldenframe from "../../assets/goldenframe.png";
+import goldenframe from "../../assets/frame4.png";
+import logo from "../../assets/logo.png";
+import mainlogo from "../../assets/mainlogo.png";
+
+// Import audio files
+import spinSound from "../../assets/a.mp3";
+import stopSound from "../../assets/a.mp3";
+import winSound from "../../assets/a.mp3";
 
 const symbols = [s1, s2, s3, s4, s5];
 
@@ -43,111 +50,84 @@ const SlotGame = () => {
   const [isMuted, setIsMuted] = useState(false);
 
   // Audio references
-  const audioContextRef = useRef(null);
-  const spinSoundRef = useRef(null);
-  const winSoundRef = useRef(null);
-  const stopSoundRef = useRef(null);
+  const spinAudioRef = useRef(null);
+  const stopAudioRef = useRef(null);
+  const winAudioRef = useRef(null);
 
-  // Initialize audio context and sounds
+  // Initialize audio elements
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext ||
-      window.webkitAudioContext)();
+    spinAudioRef.current = new Audio(spinSound);
+    stopAudioRef.current = new Audio(stopSound);
+    winAudioRef.current = new Audio(winSound);
+
+    spinAudioRef.current.loop = true;
+    spinAudioRef.current.volume = 0.5;
+    stopAudioRef.current.volume = 0.6;
+    winAudioRef.current.volume = 0.7;
+
     return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
+      if (spinAudioRef.current) {
+        spinAudioRef.current.pause();
+        spinAudioRef.current = null;
+      }
+      if (stopAudioRef.current) {
+        stopAudioRef.current.pause();
+        stopAudioRef.current = null;
+      }
+      if (winAudioRef.current) {
+        winAudioRef.current.pause();
+        winAudioRef.current = null;
       }
     };
   }, []);
 
+  // 🔊 Auto start sound when page loads (after first click/tap)
+  useEffect(() => {
+    const startAudio = () => {
+      if (!isMuted && spinAudioRef.current) {
+        spinAudioRef.current.play().catch(() => {});
+      }
+    };
+
+    document.addEventListener("click", startAudio, { once: true });
+    document.addEventListener("touchstart", startAudio, { once: true });
+
+    return () => {
+      document.removeEventListener("click", startAudio);
+      document.removeEventListener("touchstart", startAudio);
+    };
+  }, [isMuted]);
+
   // Play spin sound
   const playSpinSound = () => {
-    if (isMuted || !audioContextRef.current) return;
-
-    const ctx = audioContextRef.current;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    oscillator.frequency.value = 200;
-    oscillator.type = "square";
-    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.1);
-
-    spinSoundRef.current = setInterval(() => {
-      if (isMuted) return;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 200 + Math.random() * 100;
-      osc.type = "square";
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.05);
-    }, 100);
+    if (isMuted || !spinAudioRef.current) return;
+    spinAudioRef.current.currentTime = 0;
+    spinAudioRef.current.play().catch(() => {});
   };
 
   // Stop spin sound
   const stopSpinSound = () => {
-    if (spinSoundRef.current) {
-      clearInterval(spinSoundRef.current);
-      spinSoundRef.current = null;
+    if (spinAudioRef.current) {
+      spinAudioRef.current.pause();
+      spinAudioRef.current.currentTime = 0;
     }
   };
 
   // Play stop sound
   const playStopSound = () => {
-    if (isMuted || !audioContextRef.current) return;
-
-    const ctx = audioContextRef.current;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    oscillator.frequency.value = 300;
-    oscillator.type = "sine";
-    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.2);
+    if (isMuted || !stopAudioRef.current) return;
+    stopAudioRef.current.currentTime = 0;
+    stopAudioRef.current.play().catch(() => {});
   };
 
   // Play win sound
   const playWinSound = () => {
-    if (isMuted || !audioContextRef.current) return;
-
-    const ctx = audioContextRef.current;
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C, E, G, C
-
-    notes.forEach((freq, index) => {
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      oscillator.frequency.value = freq;
-      oscillator.type = "sine";
-
-      const startTime = ctx.currentTime + index * 0.15;
-      gainNode.gain.setValueAtTime(0.3, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
-
-      oscillator.start(startTime);
-      oscillator.stop(startTime + 0.4);
-    });
+    if (isMuted || !winAudioRef.current) return;
+    winAudioRef.current.currentTime = 0;
+    winAudioRef.current.play().catch(() => {});
   };
 
-  // Auto-increase total jackpot with bigger increments
+  // Auto-increase total jackpot
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
@@ -157,7 +137,7 @@ const SlotGame = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Countdown timer
+  // Countdown timer for modal
   useEffect(() => {
     if (!showModal) return;
     const interval = setInterval(() => {
@@ -183,6 +163,7 @@ const SlotGame = () => {
   const randomSymbol = () =>
     symbols[Math.floor(Math.random() * symbols.length)];
 
+  // Handle spin logic
   const handleSpin = () => {
     if (spinning) return;
     setSpinning(true);
@@ -190,7 +171,6 @@ const SlotGame = () => {
     setShowModal(false);
     setStoppingColumns([false, false, false, false, false, false]);
 
-    // Play spin sound
     playSpinSound();
 
     const spinDuration = 2500;
@@ -199,323 +179,64 @@ const SlotGame = () => {
 
     if (isWin) {
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-      finalRows = [
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-        [winSymbol, winSymbol, winSymbol, winSymbol, winSymbol, winSymbol],
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-      ];
-      for (let col = 0; col < 6; col++) {
-        while (finalRows[0][col] === winSymbol)
-          finalRows[0][col] = randomSymbol();
-        while (finalRows[2][col] === winSymbol)
-          finalRows[2][col] = randomSymbol();
-        while (finalRows[3][col] === winSymbol)
-          finalRows[3][col] = randomSymbol();
-      }
+      finalRows = Array(4)
+        .fill()
+        .map(() => Array(6).fill(randomSymbol()));
+      finalRows[1] = Array(6).fill(winSymbol);
     } else {
-      finalRows = [
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-        [
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-          randomSymbol(),
-        ],
-      ];
-      // Ensure middle row doesn't have all same symbols
-      let attempts = 0;
-      while (attempts < 100) {
-        const allSame = finalRows[1].every((sym) => sym === finalRows[1][0]);
-        if (!allSame) break;
-        finalRows[1] = finalRows[1].map(() => randomSymbol());
-        attempts++;
-      }
+      finalRows = Array(4)
+        .fill()
+        .map(() => Array(6).fill(randomSymbol()));
     }
 
-    // Stop columns sequentially
-    setTimeout(() => {
-      playStopSound();
-      setStoppingColumns([true, false, false, false, false, false]);
-      setRows((prev) => [
-        [
-          finalRows[0][0],
-          prev[0][1],
-          prev[0][2],
-          prev[0][3],
-          prev[0][4],
-          prev[0][5],
-        ],
-        [
-          finalRows[1][0],
-          prev[1][1],
-          prev[1][2],
-          prev[1][3],
-          prev[1][4],
-          prev[1][5],
-        ],
-        [
-          finalRows[2][0],
-          prev[2][1],
-          prev[2][2],
-          prev[2][3],
-          prev[2][4],
-          prev[2][5],
-        ],
-        [
-          finalRows[3][0],
-          prev[3][1],
-          prev[3][2],
-          prev[3][3],
-          prev[3][4],
-          prev[3][5],
-        ],
-      ]);
-    }, spinDuration);
-
-    setTimeout(() => {
-      playStopSound();
-      setStoppingColumns([true, true, false, false, false, false]);
-      setRows((prev) => [
-        [
-          prev[0][0],
-          finalRows[0][1],
-          prev[0][2],
-          prev[0][3],
-          prev[0][4],
-          prev[0][5],
-        ],
-        [
-          prev[1][0],
-          finalRows[1][1],
-          prev[1][2],
-          prev[1][3],
-          prev[1][4],
-          prev[1][5],
-        ],
-        [
-          prev[2][0],
-          finalRows[2][1],
-          prev[2][2],
-          prev[2][3],
-          prev[2][4],
-          prev[2][5],
-        ],
-        [
-          prev[3][0],
-          finalRows[3][1],
-          prev[3][2],
-          prev[3][3],
-          prev[3][4],
-          prev[3][5],
-        ],
-      ]);
-    }, spinDuration + 300);
-
-    setTimeout(() => {
-      playStopSound();
-      setStoppingColumns([true, true, true, false, false, false]);
-      setRows((prev) => [
-        [
-          prev[0][0],
-          prev[0][1],
-          finalRows[0][2],
-          prev[0][3],
-          prev[0][4],
-          prev[0][5],
-        ],
-        [
-          prev[1][0],
-          prev[1][1],
-          finalRows[1][2],
-          prev[1][3],
-          prev[1][4],
-          prev[1][5],
-        ],
-        [
-          prev[2][0],
-          prev[2][1],
-          finalRows[2][2],
-          prev[2][3],
-          prev[2][4],
-          prev[2][5],
-        ],
-        [
-          prev[3][0],
-          prev[3][1],
-          finalRows[3][2],
-          prev[3][3],
-          prev[3][4],
-          prev[3][5],
-        ],
-      ]);
-    }, spinDuration + 600);
-
-    setTimeout(() => {
-      playStopSound();
-      setStoppingColumns([true, true, true, true, false, false]);
-      setRows((prev) => [
-        [
-          prev[0][0],
-          prev[0][1],
-          prev[0][2],
-          finalRows[0][3],
-          prev[0][4],
-          prev[0][5],
-        ],
-        [
-          prev[1][0],
-          prev[1][1],
-          prev[1][2],
-          finalRows[1][3],
-          prev[1][4],
-          prev[1][5],
-        ],
-        [
-          prev[2][0],
-          prev[2][1],
-          prev[2][2],
-          finalRows[2][3],
-          prev[2][4],
-          prev[2][5],
-        ],
-        [
-          prev[3][0],
-          prev[3][1],
-          prev[3][2],
-          finalRows[3][3],
-          prev[3][4],
-          prev[3][5],
-        ],
-      ]);
-    }, spinDuration + 900);
-
-    setTimeout(() => {
-      playStopSound();
-      setStoppingColumns([true, true, true, true, true, false]);
-      setRows((prev) => [
-        [
-          prev[0][0],
-          prev[0][1],
-          prev[0][2],
-          prev[0][3],
-          finalRows[0][4],
-          prev[0][5],
-        ],
-        [
-          prev[1][0],
-          prev[1][1],
-          prev[1][2],
-          prev[1][3],
-          finalRows[1][4],
-          prev[1][5],
-        ],
-        [
-          prev[2][0],
-          prev[2][1],
-          prev[2][2],
-          prev[2][3],
-          finalRows[2][4],
-          prev[2][5],
-        ],
-        [
-          prev[3][0],
-          prev[3][1],
-          prev[3][2],
-          prev[3][3],
-          finalRows[3][4],
-          prev[3][5],
-        ],
-      ]);
-    }, spinDuration + 1200);
-
-    setTimeout(() => {
-      playStopSound();
-      stopSpinSound();
-      setStoppingColumns([true, true, true, true, true, true]);
-      setRows(finalRows);
-
+    // Sequential stop logic
+    const delays = [0, 300, 600, 900, 1200, 1500];
+    delays.forEach((delay, i) => {
       setTimeout(() => {
-        const middle = finalRows[1];
-        const isWinner = middle.every((sym) => sym === middle[0]);
+        playStopSound();
+        setStoppingColumns((prev) => {
+          const updated = [...prev];
+          updated[i] = true;
+          return updated;
+        });
+      }, spinDuration + delay);
+    });
 
-        setWinner(isWinner);
-        setSpinning(false);
+    setTimeout(() => {
+      stopSpinSound();
+      setRows(finalRows);
+      setSpinning(false);
 
-        if (isWinner) {
-          playWinSound();
-          setWinCount((prev) => {
-            const newCount = prev + 1;
-            if (newCount === 1) {
-              setTimeout(() => setShowModal(true), 1000);
-            }
-            return newCount;
-          });
-        }
-      }, 500);
-    }, spinDuration + 1500);
+      const middle = finalRows[1];
+      const isWinner = middle.every((sym) => sym === middle[0]);
+      setWinner(isWinner);
+
+      if (isWinner) {
+        playWinSound();
+        setWinCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount === 1) {
+            setTimeout(() => setShowModal(true), 1000);
+          }
+          return newCount;
+        });
+      }
+    }, spinDuration + 2000);
   };
 
-  // Increase bet and free spins
+  // Bet controls
   const handleIncreaseBet = () => {
     setBet((prev) => prev + 50);
     setFreeSpins((prev) => prev + 5000);
   };
 
-  // Decrease bet and free spins
   const handleDecreaseBet = () => {
     if (bet <= 50) return;
     setBet((prev) => prev - 50);
     setFreeSpins((prev) => Math.max(5000, prev - 5000));
   };
 
-  // Toggle mute
+  // Mute toggle
   const toggleMute = () => {
     setIsMuted(!isMuted);
     if (!isMuted) {
@@ -528,7 +249,7 @@ const SlotGame = () => {
       <div className="SlotGame-container">
         <img className="goldenframe-img" src={goldenframe} alt="" />
 
-        {/* Volume Control Button */}
+        {/* Volume Control */}
         <button
           onClick={toggleMute}
           style={{
@@ -545,14 +266,9 @@ const SlotGame = () => {
             justifyContent: "center",
             cursor: "pointer",
             zIndex: 100,
-            transition: "all 0.3s ease",
           }}
         >
-          {isMuted ? (
-            <span style={{ fontSize: "20px" }}>🔇</span>
-          ) : (
-            <span style={{ fontSize: "20px" }}>🔊</span>
-          )}
+          {isMuted ? <span>🔇</span> : <span>🔊</span>}
         </button>
 
         <div className="jackpoint-box">
@@ -560,6 +276,11 @@ const SlotGame = () => {
             <span>💥Total JACKPOT</span> <br /> Rp.{" "}
             {totalJackpot.toLocaleString()}.00
           </h3>
+        </div>
+
+        <div className="logo-box">
+          <img src={logo} alt="" />
+          <img className="main-logo" src={mainlogo} alt="" />
         </div>
 
         <div className="slot-game-main-box">
@@ -587,7 +308,9 @@ const SlotGame = () => {
             </div>
           ))}
         </div>
+
         <h2 className="place-bet-text">Place Your Bet</h2>
+
         <div className="stats-box-main">
           <div className="stats-box1">
             <h3>
@@ -604,6 +327,7 @@ const SlotGame = () => {
             <h3>Rp {freeSpins.toLocaleString()}</h3>
           </div>
         </div>
+
         <div className="slot-button-box">
           <button className="plus-button" onClick={handleDecreaseBet}>
             -
@@ -616,6 +340,7 @@ const SlotGame = () => {
           </button>
         </div>
       </div>
+
       {showModal && (
         <div className="jackpot-modal">
           <div className="jackpot-modal-content">
