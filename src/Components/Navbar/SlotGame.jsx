@@ -6,12 +6,12 @@ import s3 from "../../assets/Capture-removebg-preview (11).png";
 import s4 from "../../assets/Capture-removebg-preview (12).png";
 import s5 from "../../assets/Capture-removebg-preview (13).png";
 import spinlogo from "../../assets/pngwing.com (5).png";
-import goldenframe from "../../assets/frame4.png";
+import goldenframe from "../../assets/floral-frame-with-gold-mandala-decoration.png";
 import logo from "../../assets/logo.png";
 import mainlogo from "../../assets/mainlogo.png";
 
 // 🎵 Single background sound
-import backgroundSound from "../../assets/a.mp3";
+import backgroundSound from "../../assets/b.mp3";
 
 const symbols = [s1, s2, s3, s4, s5];
 
