@@ -131,7 +131,7 @@ const SlotGame = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
-        (prev) => prev + Math.floor(Math.random() * 50000 + 25000)
+        (prev) => prev + Math.floor(Math.random() * 50000 + 125000)
       );
     }, 1500);
     return () => clearInterval(interval);
@@ -247,8 +247,6 @@ const SlotGame = () => {
   return (
     <div className="SlotGame">
       <div className="SlotGame-container">
-        <img className="goldenframe-img" src={goldenframe} alt="" />
-
         {/* Volume Control */}
         <button
           onClick={toggleMute}
@@ -282,33 +280,34 @@ const SlotGame = () => {
           <img src={logo} alt="" />
           <img className="main-logo" src={mainlogo} alt="" />
         </div>
-
-        <div className="slot-game-main-box">
-          {rows.map((row, i) => (
-            <div
-              key={i}
-              className={`slot-game-main-box-inner ${
-                winner && i === 1 ? "winner" : ""
-              }`}
-            >
-              {row.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt="symbol"
-                  className={
-                    spinning && !stoppingColumns[index]
-                      ? "spinning"
-                      : stoppingColumns[index] && spinning
-                      ? "stopping"
-                      : ""
-                  }
-                />
-              ))}
-            </div>
-          ))}
+        <div className="slot-game-main-box-container">
+          <img className="goldenframe-img" src={goldenframe} alt="" />
+          <div className="slot-game-main-box">
+            {rows.map((row, i) => (
+              <div
+                key={i}
+                className={`slot-game-main-box-inner ${
+                  winner && i === 1 ? "winner" : ""
+                }`}
+              >
+                {row.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt="symbol"
+                    className={
+                      spinning && !stoppingColumns[index]
+                        ? "spinning"
+                        : stoppingColumns[index] && spinning
+                        ? "stopping"
+                        : ""
+                    }
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-
         <h2 className="place-bet-text">Place Your Bet</h2>
 
         <div className="stats-box-main">
