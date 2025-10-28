@@ -6,16 +6,12 @@ import s3 from "../../assets/Capture-removebg-preview (11).png";
 import s4 from "../../assets/Capture-removebg-preview (12).png";
 import s5 from "../../assets/Capture-removebg-preview (13).png";
 import spinlogo from "../../assets/pngwing.com (5).png";
-import frame1 from "../../assets/frame1.png";
-import framebg from "../../assets/frame5.png";
 import goldenframe from "../../assets/frame4.png";
 import logo from "../../assets/logo.png";
 import mainlogo from "../../assets/mainlogo.png";
 
-// Import audio files
-import spinSound from "../../assets/a.mp3";
-import stopSound from "../../assets/a.mp3";
-import winSound from "../../assets/a.mp3";
+// 🎵 Single background sound
+import backgroundSound from "../../assets/a.mp3";
 
 const symbols = [s1, s2, s3, s4, s5];
 
@@ -49,85 +45,49 @@ const SlotGame = () => {
   });
   const [isMuted, setIsMuted] = useState(false);
 
-  // Audio references
-  const spinAudioRef = useRef(null);
-  const stopAudioRef = useRef(null);
-  const winAudioRef = useRef(null);
+  // 🎧 Background music ref
+  const bgAudioRef = useRef(null);
 
-  // Initialize audio elements
+  // 🎵 Initialize background sound and auto-play after delay
   useEffect(() => {
-    spinAudioRef.current = new Audio(spinSound);
-    stopAudioRef.current = new Audio(stopSound);
-    winAudioRef.current = new Audio(winSound);
+    bgAudioRef.current = new Audio(backgroundSound);
+    bgAudioRef.current.loop = true;
+    bgAudioRef.current.volume = 0.4;
 
-    spinAudioRef.current.loop = true;
-    spinAudioRef.current.volume = 0.5;
-    stopAudioRef.current.volume = 0.6;
-    winAudioRef.current.volume = 0.7;
+    // Auto-play sound after 2 seconds
+    const autoPlayTimer = setTimeout(() => {
+      if (!isMuted && bgAudioRef.current) {
+        bgAudioRef.current.play().catch((error) => {
+          console.log(
+            "Auto-play failed, will require user interaction:",
+            error
+          );
+        });
+      }
+    }, 2000);
 
-    return () => {
-      if (spinAudioRef.current) {
-        spinAudioRef.current.pause();
-        spinAudioRef.current = null;
-      }
-      if (stopAudioRef.current) {
-        stopAudioRef.current.pause();
-        stopAudioRef.current = null;
-      }
-      if (winAudioRef.current) {
-        winAudioRef.current.pause();
-        winAudioRef.current = null;
-      }
-    };
-  }, []);
-
-  // 🔊 Auto start sound when page loads (after first click/tap)
-  useEffect(() => {
+    // Fallback: if auto-play fails, enable on user interaction
     const startAudio = () => {
-      if (!isMuted && spinAudioRef.current) {
-        spinAudioRef.current.play().catch(() => {});
+      if (!isMuted && bgAudioRef.current && bgAudioRef.current.paused) {
+        bgAudioRef.current.play().catch(() => {});
       }
     };
 
-    document.addEventListener("click", startAudio, { once: true });
-    document.addEventListener("touchstart", startAudio, { once: true });
+    document.addEventListener("click", startAudio);
+    document.addEventListener("touchstart", startAudio);
 
     return () => {
+      clearTimeout(autoPlayTimer);
       document.removeEventListener("click", startAudio);
       document.removeEventListener("touchstart", startAudio);
+      if (bgAudioRef.current) {
+        bgAudioRef.current.pause();
+        bgAudioRef.current = null;
+      }
     };
   }, [isMuted]);
 
-  // Play spin sound
-  const playSpinSound = () => {
-    if (isMuted || !spinAudioRef.current) return;
-    spinAudioRef.current.currentTime = 0;
-    spinAudioRef.current.play().catch(() => {});
-  };
-
-  // Stop spin sound
-  const stopSpinSound = () => {
-    if (spinAudioRef.current) {
-      spinAudioRef.current.pause();
-      spinAudioRef.current.currentTime = 0;
-    }
-  };
-
-  // Play stop sound
-  const playStopSound = () => {
-    if (isMuted || !stopAudioRef.current) return;
-    stopAudioRef.current.currentTime = 0;
-    stopAudioRef.current.play().catch(() => {});
-  };
-
-  // Play win sound
-  const playWinSound = () => {
-    if (isMuted || !winAudioRef.current) return;
-    winAudioRef.current.currentTime = 0;
-    winAudioRef.current.play().catch(() => {});
-  };
-
-  // Auto-increase total jackpot
+  // 🎰 Auto-increase total jackpot
   useEffect(() => {
     const interval = setInterval(() => {
       setTotalJackpot(
@@ -137,7 +97,7 @@ const SlotGame = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Countdown timer for modal
+  // ⏱ Countdown timer
   useEffect(() => {
     if (!showModal) return;
     const interval = setInterval(() => {
@@ -163,15 +123,13 @@ const SlotGame = () => {
   const randomSymbol = () =>
     symbols[Math.floor(Math.random() * symbols.length)];
 
-  // Handle spin logic
+  // 🎰 Spin logic (no sound now)
   const handleSpin = () => {
     if (spinning) return;
     setSpinning(true);
     setWinner(false);
     setShowModal(false);
     setStoppingColumns([false, false, false, false, false, false]);
-
-    playSpinSound();
 
     const spinDuration = 2500;
     const isWin = Math.random() > 0.3;
@@ -189,11 +147,9 @@ const SlotGame = () => {
         .map(() => Array(6).fill(randomSymbol()));
     }
 
-    // Sequential stop logic
     const delays = [0, 300, 600, 900, 1200, 1500];
     delays.forEach((delay, i) => {
       setTimeout(() => {
-        playStopSound();
         setStoppingColumns((prev) => {
           const updated = [...prev];
           updated[i] = true;
@@ -203,16 +159,13 @@ const SlotGame = () => {
     });
 
     setTimeout(() => {
-      stopSpinSound();
       setRows(finalRows);
       setSpinning(false);
-
       const middle = finalRows[1];
       const isWinner = middle.every((sym) => sym === middle[0]);
       setWinner(isWinner);
 
       if (isWinner) {
-        playWinSound();
         setWinCount((prev) => {
           const newCount = prev + 1;
           if (newCount === 1) {
@@ -236,18 +189,22 @@ const SlotGame = () => {
     setFreeSpins((prev) => Math.max(5000, prev - 5000));
   };
 
-  // Mute toggle
+  // 🔇 Mute toggle
   const toggleMute = () => {
     setIsMuted(!isMuted);
-    if (!isMuted) {
-      stopSpinSound();
+    if (bgAudioRef.current) {
+      if (!isMuted) {
+        bgAudioRef.current.pause();
+      } else {
+        bgAudioRef.current.play().catch(() => {});
+      }
     }
   };
 
   return (
     <div className="SlotGame">
       <div className="SlotGame-container">
-        {/* Volume Control */}
+        {/* 🔊 Volume Control */}
         <button
           onClick={toggleMute}
           style={{
@@ -280,6 +237,7 @@ const SlotGame = () => {
           <img src={logo} alt="" />
           <img className="main-logo" src={mainlogo} alt="" />
         </div>
+
         <div className="slot-game-main-box-container">
           <img className="goldenframe-img" src={goldenframe} alt="" />
           <div className="slot-game-main-box">
@@ -308,6 +266,7 @@ const SlotGame = () => {
             ))}
           </div>
         </div>
+
         <h2 className="place-bet-text">Place Your Bet</h2>
 
         <div className="stats-box-main">
