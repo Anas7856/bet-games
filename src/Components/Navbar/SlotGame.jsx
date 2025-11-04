@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./game.scss";
-import s1 from "../../assets/Capture-removebg-preview (9).png";
+import s1 from "../../assets/imgi_3_zeus-11.png";
 import s2 from "../../assets/Capture-removebg-preview (10).png";
 import s3 from "../../assets/Capture-removebg-preview (11).png";
-import s4 from "../../assets/Capture-removebg-preview (12).png";
+import s4 from "../../assets/imgi_3_zeus-10.png";
 import s5 from "../../assets/Capture-removebg-preview (13).png";
 import spinlogo from "../../assets/pngwing.com (5).png";
 import goldenframe from "../../assets/floral-frame-with-gold-mandala-decoration.png";
 import logo from "../../assets/logo.png";
 import mainlogo from "../../assets/mainlogo.png";
-
+import jackpotbg from "../../assets/658EwPiH.gif";
 // 🎵 Single background sound
 import backgroundSound from "../../assets/b.mp3";
 
@@ -146,29 +146,34 @@ const SlotGame = () => {
     setShowModal(false);
     setStoppingColumns([false, false, false, false, false, false]);
 
-    const isWin = Math.random() > 0.3;
+    // ✅ Only allow winning for s1 or s4
+    const winSymbols = [s1, s4];
+    const isWin = Math.random() > 0.5; // 50% chance for a win (adjust as desired)
 
-    // Create the final result
     let finalRows = [[], [], [], []];
 
     if (isWin) {
-      // Pick a winning symbol for the middle row
-      const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+      // Pick only s1 or s4 as the winning symbol
+      const winSymbol =
+        winSymbols[Math.floor(Math.random() * winSymbols.length)];
 
-      // Fill each row
       for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
         for (let colIndex = 0; colIndex < 6; colIndex++) {
           if (rowIndex === 1) {
-            // Middle row (row index 1) - all same symbol
+            // Middle row - only s1 or s4
             finalRows[rowIndex][colIndex] = winSymbol;
           } else {
-            // Other rows - random different symbols
-            finalRows[rowIndex][colIndex] = randomSymbol();
+            // Random other symbols
+            let randomSym;
+            do {
+              randomSym = randomSymbol();
+            } while (winSymbols.includes(randomSym)); // Avoid s1/s4 on non-winning rows
+            finalRows[rowIndex][colIndex] = randomSym;
           }
         }
       }
     } else {
-      // No win - all random
+      // No win - random symbols, exclude pure s1/s4 rows
       for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
         for (let colIndex = 0; colIndex < 6; colIndex++) {
           finalRows[rowIndex][colIndex] = randomSymbol();
@@ -187,7 +192,6 @@ const SlotGame = () => {
           return updated;
         });
 
-        // Update only this column in all rows
         setRows((prevRows) => {
           const newRows = prevRows.map((row) => [...row]);
           for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
@@ -198,11 +202,12 @@ const SlotGame = () => {
       }, delay);
     });
 
-    // Check for win after all columns stopped
     setTimeout(() => {
       setSpinning(false);
       const middle = finalRows[1];
-      const isWinner = middle.every((sym) => sym === middle[0]);
+      const isWinner =
+        middle.every((sym) => sym === s1) || middle.every((sym) => sym === s4);
+
       setWinner(isWinner);
 
       if (isWinner) {
@@ -321,12 +326,9 @@ const SlotGame = () => {
         >
           {isMuted ? <span>🔇</span> : <span>🔊</span>}
         </button>
-
+        <img className="jackpotbg-img" src={jackpotbg} alt="" />
         <div className="jackpoint-box">
-          <h3>
-            <span>💥Total JACKPOT</span> <br /> Rp.{" "}
-            {totalJackpot.toLocaleString()}.00
-          </h3>
+          <h3>Rp.{totalJackpot.toLocaleString()}.00</h3>
         </div>
 
         <div className="logo-box">
@@ -392,6 +394,9 @@ const SlotGame = () => {
           <button className="plus-button" onClick={handleIncreaseBet}>
             +
           </button>
+        </div>
+        <div className="slot-bottom-text-box">
+          🚀Putar untuk Uji Coba Akun Gacor🚀
         </div>
       </div>
 
