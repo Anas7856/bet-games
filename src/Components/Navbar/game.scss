@@ -1,6 +1,6 @@
 .SlotGame {
   background-color: black;
-  height: 100vh;
+  height: 100%;
   width: 100%;
   display: flex;
   align-items: center;
@@ -351,9 +351,9 @@
   }
 
   h2 {
-    color: gold;
+    color: red;
     font-size: 32px;
-    text-shadow: 0 0 10px gold, 0 0 20px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 10px rgb(0, 0, 0), 0 0 20px rgba(255, 215, 0, 0.5);
     margin-bottom: 10px;
     font-weight: 900;
   }
@@ -515,7 +515,8 @@
 }
 .slot-bottom-text-box {
   height: 35px;
-  margin-top: 40px;
+  margin-top: 20px;
+  margin-bottom: 30px;
   width: 100%;
   display: flex;
   align-items: center;
